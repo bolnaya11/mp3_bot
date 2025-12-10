@@ -5,7 +5,7 @@ import io
 import asyncio
 from aiogram import executor
 
-TOKEN = "ВСТАВЬ_СЮДА_ТОКЕН"
+TOKEN = "8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
