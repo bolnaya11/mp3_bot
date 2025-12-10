@@ -1,7 +1,7 @@
 # config.py
 
 # Telegram токен
-TELEGRAM_TOKEN = "ВАШ_ТОКЕН_БОТА"
+TELEGRAM_TOKEN = "8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"
 
 # Путь к директории с MP3
 MP3_DIR = "./mp3_files/"
