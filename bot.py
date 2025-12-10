@@ -3,7 +3,6 @@ from aiogram.types import InputFile
 from mutagen.easyid3 import EasyID3
 import io
 import asyncio
-from aiogram import executor
 
 TOKEN = "8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"
 
@@ -39,5 +38,9 @@ async def edit_tags(msg: types.Message):
     data.seek(0)
     await msg.answer_audio(InputFile(data, filename=audio.file_name))
 
+async def main():
+    print("Бот запущен")
+    await dp.start_polling(bot)
+
 if __name__ == "__main__":
-    executor.start_polling(dp)
+    asyncio.run(main())
