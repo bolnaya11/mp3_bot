@@ -5,7 +5,7 @@ from mutagen.id3 import ID3, APIC, TIT2, TPE1
 from mutagen.mp3 import MP3
 from PIL import Image
 
-TOKEN = os.environ["BOT_TOKEN"]
+TOKEN = os.environ["8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"]
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
