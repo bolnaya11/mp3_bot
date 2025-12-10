@@ -1,10 +1,9 @@
 import os
-from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils.keyboard import ReplyKeyboardMarkup, KeyboardButton
 from mutagen.easyid3 import EasyID3
 
-load_dotenv()
+
 
 TOKEN = os.getenv("8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8")
 bot = Bot(token=TOKEN)
