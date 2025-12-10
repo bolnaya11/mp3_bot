@@ -1,11 +1,11 @@
 import os
 import io
+import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import Message, ContentType
 from mutagen.id3 import ID3, APIC, TIT2, TPE1
 from mutagen.mp3 import MP3
 from PIL import Image
-import asyncio
 
 TOKEN = os.environ["8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"]
 bot = Bot(token=TOKEN)
@@ -29,7 +29,6 @@ async def set_title(msg: Message):
         user_data[uid]["title"] = msg.text
         await msg.answer("Теперь пришли исполнителя")
         return
-
     if uid in user_data and "artist" not in user_data[uid]:
         user_data[uid]["artist"] = msg.text
         await msg.answer("Теперь пришли картинку (обложку)")
