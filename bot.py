@@ -4,7 +4,7 @@ from aiogram.types import FSInputFile
 from mutagen.easyid3 import EasyID3
 
 # Берём токен из Environment (добавь через Settings → Environment на Railway)
-TOKEN = os.getenv("8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8")
+TOKEN = os.getenv("BOT_TOKEN")
 if TOKEN is None:
     raise ValueError("BOT_TOKEN не найден! Добавь переменную через Settings → Environment.")
 
