@@ -1,81 +1,54 @@
 import os
-import io
-import asyncio
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import Message, ContentType
-from mutagen.id3 import ID3, APIC, TIT2, TPE1
-from mutagen.mp3 import MP3
-from PIL import Image
+from aiogram.utils.keyboard import ReplyKeyboardMarkup, KeyboardButton
+from mutagen.easyid3 import EasyID3
 
-TOKEN = os.environ["8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"]
+load_dotenv()
+
+TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-user_data = {}
+@dp.message(commands=["start"])
+async def start(msg: types.Message):
+    await msg.answer("Кидай MP3, я поменяю теги. Формат:\n\nНазвание — Автор")
 
-@dp.message(ContentType.AUDIO)
-async def get_mp3(msg: Message):
-    file = await msg.audio.get_file()
-    mp3_bytes = await bot.download_file(file.file_path)
 
-    uid = msg.from_user.id
-    user_data[uid] = {"mp3": mp3_bytes}
-    await msg.answer("Окей, пришли новое название трека")
+@dp.message(content_types=["audio"])
+async def edit_tags(msg: types.Message):
+    audio = msg.audio
+    file = await bot.get_file(audio.file_id)
 
-@dp.message()
-async def set_title(msg: Message):
-    uid = msg.from_user.id
-    if uid in user_data and "title" not in user_data[uid]:
-        user_data[uid]["title"] = msg.text
-        await msg.answer("Теперь пришли исполнителя")
-        return
-    if uid in user_data and "artist" not in user_data[uid]:
-        user_data[uid]["artist"] = msg.text
-        await msg.answer("Теперь пришли картинку (обложку)")
-        return
+    path = f"tmp/{audio.file_id}.mp3"
+    os.makedirs("tmp", exist_ok=True)
 
-@dp.message(ContentType.PHOTO)
-async def set_cover(msg: Message):
-    uid = msg.from_user.id
-    if uid not in user_data:
-        return
+    await bot.download_file(file.file_path, path)
 
-    photo = msg.photo[-1]
-    file = await photo.get_file()
-    img_bytes = await bot.download_file(file.file_path)
+    # Попытка парсить название файла
+    # ожидаем формат "Название — Автор"
+    name = audio.file_name.replace(".mp3", "")
+    
+    if "—" in name:
+        title, artist = name.split("—", 1)
+        title = title.strip()
+        artist = artist.strip()
+    else:
+        title = name
+        artist = "Unknown"
 
-    cover = Image.open(img_bytes)
-    cover_buffer = io.BytesIO()
-    cover.save(cover_buffer, format='jpeg')
-    cover_bytes = cover_buffer.getvalue()
+    tags = EasyID3(path)
+    tags["title"] = title
+    tags["artist"] = artist
+    tags.save()
 
-    mp3_bytes = user_data[uid]["mp3"]
+    await msg.answer("Готово, держи👇")
+    
+    await msg.answer_audio(types.FSInputFile(path))
 
-    with open("track.mp3", "wb") as f:
-        f.write(mp3_bytes.getvalue())
-
-    audio = MP3("track.mp3", ID3=ID3)
-    if audio.tags is None:
-        audio.add_tags()
-
-    audio.tags["TIT2"] = TIT2(encoding=3, text=user_data[uid]["title"])
-    audio.tags["TPE1"] = TPE1(encoding=3, text=user_data[uid]["artist"])
-    audio.tags["APIC"] = APIC(
-        encoding=3,
-        mime='image/jpeg',
-        type=3,
-        desc='Cover',
-        data=cover_bytes
-    )
-    audio.save()
-
-    await msg.answer_document(open("track.mp3", "rb"))
-
-    os.remove("track.mp3")
-    del user_data[uid]
-
-async def main():
-    await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import asyncio
+    from aiogram import executor
+
+    executor.start_polling(dp)
