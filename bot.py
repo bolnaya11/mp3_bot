@@ -6,7 +6,7 @@ from mutagen.easyid3 import EasyID3
 
 load_dotenv()
 
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
