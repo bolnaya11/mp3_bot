@@ -1,39 +1,42 @@
 import os
 import io
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import Message, ContentType
 from mutagen.id3 import ID3, APIC, TIT2, TPE1
 from mutagen.mp3 import MP3
 from PIL import Image
+import asyncio
 
 TOKEN = os.environ["8361301711:AAHpBB6liCtYgRnie1GDXkMY9COaLoYDDt8"]
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
 user_data = {}
 
-@dp.message_handler(content_types=['audio'])
-async def get_mp3(msg: types.Message):
+@dp.message(ContentType.AUDIO)
+async def get_mp3(msg: Message):
     file = await msg.audio.get_file()
     mp3_bytes = await bot.download_file(file.file_path)
 
     uid = msg.from_user.id
     user_data[uid] = {"mp3": mp3_bytes}
-    await msg.answer("Окей, кидай новое название трека")
+    await msg.answer("Окей, пришли новое название трека")
 
-@dp.message_handler(lambda msg: msg.from_user.id in user_data and "title" not in user_data[msg.from_user.id])
-async def set_title(msg: types.Message):
+@dp.message()
+async def set_title(msg: Message):
     uid = msg.from_user.id
-    user_data[uid]["title"] = msg.text
-    await msg.answer("Исполнитель?")
+    if uid in user_data and "title" not in user_data[uid]:
+        user_data[uid]["title"] = msg.text
+        await msg.answer("Теперь пришли исполнителя")
+        return
 
-@dp.message_handler(lambda msg: msg.from_user.id in user_data and "artist" not in user_data[msg.from_user.id])
-async def set_artist(msg: types.Message):
-    uid = msg.from_user.id
-    user_data[uid]["artist"] = msg.text
-    await msg.answer("Теперь пришли картинку (обложку)")
+    if uid in user_data and "artist" not in user_data[uid]:
+        user_data[uid]["artist"] = msg.text
+        await msg.answer("Теперь пришли картинку (обложку)")
+        return
 
-@dp.message_handler(content_types=['photo'])
-async def set_cover(msg: types.Message):
+@dp.message(ContentType.PHOTO)
+async def set_cover(msg: Message):
     uid = msg.from_user.id
     if uid not in user_data:
         return
@@ -72,5 +75,8 @@ async def set_cover(msg: types.Message):
     os.remove("track.mp3")
     del user_data[uid]
 
+async def main():
+    await dp.start_polling(bot)
+
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    asyncio.run(main())
